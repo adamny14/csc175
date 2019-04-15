@@ -38,21 +38,35 @@ int main(int argc, char **argv)
 {
   int cfd; // communication file descriptor (handle on socket)
   // declare structure to hold socket address info:
+  int result;
+  int x, i;
+  char *internip = argv[1];
+  char *internport = argv[2];
+  char *externport = argv[3];
+  char *protocal = argv[4];
+  char *serverip = argv[5];
+
+  in_addr_t myip = inet_addr(argv[1]);
+  unsigned short myport = htons((unsigned short)atoi(internport));
+  unsigned short outerport = htons((unsigned short)atoi(externport));
+  unsigned char proto = (unsigned char)atoi(protocal);
+
+  in_addr_t eip;
+  unsigned short eport;
+
   struct sockaddr_in serveraddr;
-  int retval; // many functions return values to indicate success/failure
-  int x;  // some data
   unsigned char buffer[128];  // binary data buffer (sample)
   
   serveraddr.sin_family = AF_INET;  // always for IPv4
-  serveraddr.sin_addr.s_addr = inet_addr(argv[1]);
-  serveraddr.sin_port = htons(atoi(argv[2]));
+  serveraddr.sin_addr.s_addr = inet_addr(serverip);
+  serveraddr.sin_port = myport;
 
   cfd = socket(AF_INET,SOCK_STREAM,0); // register tcp socket with OS
 
   // make connection to server.
-  retval = connect(cfd,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
+  result = connect(cfd,(struct sockaddr*)&serveraddr,sizeof(serveraddr));
   // note the type cast to more generic type (polymorphism)
-  if (retval != 0) { perror("socket failure!"); exit(1); }
+  if (result != 0) { perror("socket failure!"); exit(1); }
   
   // at this point, tcp connection is in ESTABLISHED state, and
   // communication with peer can begin:  (yeah!)
