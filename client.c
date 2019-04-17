@@ -23,13 +23,39 @@
    so to keep reading until we've read exactly a cetain number of bytes,
    we should use the following:
 */
-
-void readfully(int cfd, void* addr, int size) 
+char *iptoa(unsigned char buf[4])
 {
-  int r = 0; // number of bytes read so far
+  char *s = (char*)malloc(16); // max number of chars needed
+  sprintf(s,"%d.%d.%d.%d",buf[0],buf[1],buf[2],buf[3]);
+  return s;  
+}
+// use as in:
+//int ip = htonl(-2); // 255.255.255.254 converted to network byte ordering
+//printf("%s\n", iptoa( (unsigned char*)&ip ) ); // prints 255.255.255.254
+
+// Even better, this one writes to a char* allocated elsewhere,
+// provides better protection against memory leaks:
+
+// converts 4-byte int to char* ip address
+void iptostring(int *bip, char *sip)
+{
+  unsigned char* buf = (unsigned char*)bip; // cast int* to array of bytes
+  sprintf(s,"%d.%d.%d.%d",buf[0],buf[1],buf[2],buf[3]);
+}
+//usage:
+// int ip = htonl(-3); // 255.255.255.253 as a 4-byte int
+// char ipstring[16]; // "255.255.255.253\0" requires 16 chars.
+// iptostring(&ip,ipstring); // result written to local mem, no gc needed.
+
+
+void readfully(int cfd, igned char * buf, int size) 
+{
+  int total = 0;
+  int br;
   while (r<size)
     {
-      r += read(cfd, (unsigned char*)(addr + r), size-r);
+      br = read(fd, buff+total, (len,total));
+      total += br;
     }
 }
 
