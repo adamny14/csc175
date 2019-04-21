@@ -37,26 +37,14 @@ char *iptoa(unsigned char buf[4])
 // provides better protection against memory leaks:
 
 // converts 4-byte int to char* ip address
-void iptostring(int *bip, char *sip)
-{
-  unsigned char* buf = (unsigned char*)bip; // cast int* to array of bytes
-  sprintf(s,"%d.%d.%d.%d",buf[0],buf[1],buf[2],buf[3]);
-}
-//usage:
-// int ip = htonl(-3); // 255.255.255.253 as a 4-byte int
-// char ipstring[16]; // "255.255.255.253\0" requires 16 chars.
-// iptostring(&ip,ipstring); // result written to local mem, no gc needed.
 
-
-void readfully(int cfd, igned char * buf, int size) 
+void readfully(int cfd, void* addr, int size) 
 {
-  int total = 0;
-  int br;
-  while (r<size)
-    {
-      br = read(fd, buff+total, (len,total));
-      total += br;
-    }
+	  int r = 0; // number of bytes read so far
+	  while (r<size)
+	  {
+	      r += read(cfd, (unsigned char*)(addr + r), size-r);
+	  }
 }
 
 
@@ -71,18 +59,19 @@ int main(int argc, char **argv)
   char *externport = argv[3];
   char *protocal = argv[4];
   char *serverip = argv[5];
-
+  
   in_addr_t myip = inet_addr(argv[1]);
   unsigned short myport = htons((unsigned short)atoi(internport));
   unsigned short outerport = htons((unsigned short)atoi(externport));
   unsigned char proto = (unsigned char)atoi(protocal);
-
+  
   in_addr_t eip;
   unsigned short eport;
 
   struct sockaddr_in serveraddr;
   unsigned char buffer[128];  // binary data buffer (sample)
-  
+  char *ip = inet_addr(internip);
+
   serveraddr.sin_family = AF_INET;  // always for IPv4
   serveraddr.sin_addr.s_addr = inet_addr(serverip);
   serveraddr.sin_port = myport;
@@ -96,7 +85,11 @@ int main(int argc, char **argv)
   
   // at this point, tcp connection is in ESTABLISHED state, and
   // communication with peer can begin:  (yeah!)
-
+  write(buffer, ip, 4);
+  write(buffer+4, internport, 2);
+  write(buffer+6, externport, 2);
+  write(buffer+8, protocal, 1);
+  write(cfd, buffer, 9);
   readfully(cfd,&x,sizeof(int)); // read 4 bytes
   x = ntohl(x);             // convert to host byte ordering
   readfully(cfd,buffer,x);       // read x bytes into buffer
