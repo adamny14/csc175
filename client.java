@@ -44,10 +44,10 @@ public class client
       }
       catch( Exception e)
 	{ e.printStackTrace();}
-      byte[] byteIP = ipbytes("10.0.10.0");
-      byte[] port = BigInteger.valueOf(Integer.parseInt(argv[3])).toByteArray();
-      byte[] newPort = BigInteger.valueOf(Integer.parseInt(argv[4])).toByteArray();
-      byte[] protocal = BigInteger.valueOf(Integer.parseInt(argv[5])).toByteArray();
+      byte[] byteIP = ipbytes(argv[2]);
+      int port = Integer.parseInt(argv[3]);
+      int newPort = Integer.parseInt(argv[4]);
+      int protocal = Integer.parseInt(argv[5]);
       try
       {
 	  // connect to server:
@@ -64,9 +64,24 @@ public class client
 	  dout.writeShort((short)80);
 	  dout.writeShort((short)8000);
 	  dout.writeByte(6);
-	   x = din.readInt();
-          readFully(din,buffer,0,x);
-          dout.write(buffer,120,8);
+	   //x = din.readInt();
+
+	  int exPort = 0;
+	  byte[] eip = new byte[4];
+	  try{
+		  int c = 0;
+		  while( c != 4)
+		  	c += din.read(eip, c, 4-c);
+		  exPort = din.readUnsignedShort();
+	  }
+	catch(Exception e) { e.printStackTrace(); }
+
+	System.out.println("Port " + exPort + " mapped to " + ipstring(eip));
+	if(exPort == 0)
+		System.out.println("Port: " + exPort+ " already mapped");
+
+          //readFully(din,buffer,0,x);
+          //dout.write(buffer,120,8);
 	  //dout.write(buffer,120,8);
 	  System.out.println("complete");
 	  cfd.close();
